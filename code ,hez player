@@ -1,0 +1,120 @@
+import pygame
+import os
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
+
+# Initialize pygame mixer
+pygame.mixer.init()
+
+# Create the main application window
+root = tk.Tk()
+root.title("🎵 Yashovardhan Music Player")
+root.geometry("500x400")
+root.config(bg="#222222")
+
+# Display Startup Message
+startup_label = tk.Label(root, text="PIP created by Yashovardhan", fg="white", bg="#222222", font=("Arial", 14, "bold"))
+startup_label.pack(pady=10)
+
+# Ask user for the music folder
+def select_folder():
+    global mp3_list, current_index
+    folder = filedialog.askdirectory(title="Select Music Folder")  # Open folder dialog
+    if folder:
+        mp3_list = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".mp3")]
+        mp3_list.sort()
+        if mp3_list:
+            current_index = 0
+            play_song(current_index)
+        else:
+            status_label.config(text="❌ No MP3 files found!")
+
+# Function to play a song
+def play_song(index):
+    pygame.mixer.music.load(mp3_list[index])
+    pygame.mixer.music.play()
+    status_label.config(text=f"🎶 Now Playing: {os.path.basename(mp3_list[index])}")
+
+# Function to control music playback
+def play_pause():
+    if pygame.mixer.music.get_busy():
+        pygame.mixer.music.pause()
+        play_button.config(text="▶️ Play")
+    else:
+        pygame.mixer.music.unpause()
+        play_button.config(text="⏸ Pause")
+
+def stop_music():
+    pygame.mixer.music.stop()
+    status_label.config(text="⏹ Music Stopped")
+
+def next_track():
+    global current_index
+    if current_index < len(mp3_list) - 1:
+        current_index += 1
+        play_song(current_index)
+
+def prev_track():
+    global current_index
+    if current_index > 0:
+        current_index -= 1
+        play_song(current_index)
+
+def volume_up():
+    global volume
+    volume = min(volume + 0.1, 1.0)
+    pygame.mixer.music.set_volume(volume)
+    volume_label.config(text=f"🔊 Volume: {int(volume * 100)}%")
+
+def volume_down():
+    global volume
+    volume = max(volume - 0.1, 0.0)
+    pygame.mixer.music.set_volume(volume)
+    volume_label.config(text=f"🔉 Volume: {int(volume * 100)}%")
+
+# Control Buttons
+control_frame = tk.Frame(root, bg="#222222")
+control_frame.pack(pady=20)
+
+prev_button = tk.Button(control_frame, text="⏮ Previous", command=prev_track, font=("Arial", 12))
+prev_button.grid(row=0, column=0, padx=5)
+
+play_button = tk.Button(control_frame, text="▶️ Play", command=play_pause, font=("Arial", 12))
+play_button.grid(row=0, column=1, padx=5)
+
+stop_button = tk.Button(control_frame, text="⏹ Stop", command=stop_music, font=("Arial", 12))
+stop_button.grid(row=0, column=2, padx=5)
+
+next_button = tk.Button(control_frame, text="⏭ Next", command=next_track, font=("Arial", 12))
+next_button.grid(row=0, column=3, padx=5)
+
+# Volume Controls
+volume_frame = tk.Frame(root, bg="#222222")
+volume_frame.pack(pady=10)
+
+volume_label = tk.Label(volume_frame, text="🔉 Volume: 50%", fg="white", bg="#222222", font=("Arial", 12))
+volume_label.grid(row=0, column=1, padx=5)
+
+vol_down_button = tk.Button(volume_frame, text="➖", command=volume_down, font=("Arial", 12))
+vol_down_button.grid(row=0, column=0, padx=5)
+
+vol_up_button = tk.Button(volume_frame, text="➕", command=volume_up, font=("Arial", 12))
+vol_up_button.grid(row=0, column=2, padx=5)
+
+# Status Label
+status_label = tk.Label(root, text="📂 Please select a music folder", fg="white", bg="#222222", font=("Arial", 12))
+status_label.pack(pady=10)
+
+# Select Folder Button
+select_folder_button = tk.Button(root, text="📁 Select Folder", command=select_folder, font=("Arial", 12))
+select_folder_button.pack(pady=10)
+
+# Initialize variables
+mp3_list = []
+current_index = 0
+volume = 0.5  # Default volume
+pygame.mixer.music.set_volume(volume)
+
+# Run the GUI
+root.mainloop()
